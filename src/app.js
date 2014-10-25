@@ -81,12 +81,16 @@ function stopsList(){
 //gets the times for the route
 function routeTime(router){	
 	//get the times for the object
+	
+	console.log(router.tag);
 	ajax(
 		{ //request
 			url: 'http://runextbus.herokuapp.com/route/' + router.tag,
 			type: 'json'
 		},
 		function(data){ //request success
+			console.log(router.tag);
+			console.log(data[0].title);
 			var times = [];
 			var subtitle = "";
 			for(var x in data){ 
@@ -94,7 +98,8 @@ function routeTime(router){
 				subtitle = data[x].predictions[0].minutes + " minutes " + seconds + " seconds";
 				times.push({
 					title: data[x].title,
-					subtitle: subtitle
+					subtitle: subtitle,
+					predictions: data[x].predictions
 				});
 			}
 			var stopListMenu = new UI.Menu({
@@ -106,6 +111,11 @@ function routeTime(router){
 				]
 			});
 			
+			//select listener
+			stopListMenu.on('select', function(e){
+				stopTimes(times[e.itemIndex]);
+			});
+			
 			//show list
 			stopListMenu.show();
 		},
@@ -113,6 +123,30 @@ function routeTime(router){
 			
 		}
 	);
+}
+
+//gets all the times at the stop
+function stopTimes(stop){ 
+	var predictions = [];
+	
+	for(var prediction in stop.predictions){
+		predictions.push({
+			title: stop.predictions[prediction].minutes + " minutes " + Number(stop.predictions[prediction].seconds) % 60 + " seconds" 
+		});
+	}
+	
+	//times the stop
+	var stopList = new UI.Menu({
+		title: stop.title,
+		sections: [
+			{
+				items: predictions
+			}
+		]
+	});
+	
+	//show menu
+	stopList.show(); 
 }
 /*
 main.on('click', 'up', function(e) {
